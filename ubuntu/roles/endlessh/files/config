@@ -1,0 +1,8 @@
+# The port on which to listen for new SSH connections.
+Port 22
+
+# Set the detail level for the log.
+#   0 = Quiet
+#   1 = Standard, useful log messages
+#   2 = Very noisy debugging information
+LogLevel 1

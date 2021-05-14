@@ -1,0 +1,74 @@
+---
+
+- name: Install endlessh
+  apt:
+    name:
+      - endlessh
+    state: present
+  become: true
+
+- name: Start and enable the systemd service
+  systemd:
+    name: endlessh
+    state: started
+    enabled: true
+  become: true
+
+- name: Allow endlessh to bind to port 22
+  shell: |
+    file=/usr/bin/endlessh
+
+    if setcap -v 'cap_net_bind_service=+ep' $file | grep -q differs
+    then
+      setcap 'cap_net_bind_service=+ep' /usr/bin/endlessh
+
+      if setcap -v 'cap_net_bind_service=+ep' $file | grep -q OK
+      then
+        echo status=changed
+      else
+        echo status=failed
+      fi
+    fi
+    
+    setcap -v 'cap_net_bind_service=+ep' $file
+  register: task_setcap
+  changed_when: "'status=changed' in task_setcap.stdout"
+  failed_when: "'status=failed' in task_setcap.stdout"
+  become: true
+
+- debug: var=task_setcap.stdout_lines
+- debug:
+    msg: |
+      Make sure that `type endlessh` really points to `/usr/bin/endlessh`.
+      The unit file tells a different story.
+
+- name: Place the service file for systemd
+  copy:
+    src: "{{ role_path }}/files/endlessh.service"
+    dest: /etc/systemd/system/endlessh.service
+    owner: root
+    group: root
+    mode: '0644'
+  register: copy_service
+  become: true
+
+- debug:
+    msg: This completely overrides file provided by package maintainer
+
+- name: Place the config file
+  copy:
+    src: "{{ role_path }}/files/config"
+    dest: /etc/endlessh/config
+    owner: root
+    group: root
+    mode: '0655'
+  register: copy_config
+  become: true
+
+- name: Restart systemd service
+  systemd:
+    daemon_reload: true
+    name: endlessh
+    state: restarted
+  when: copy_config.changed or copy_service.changed or task_setcap.changed
+  become: true

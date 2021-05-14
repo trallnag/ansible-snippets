@@ -1,0 +1,5 @@
+# Ansible Snippets
+
+## Ubuntu
+
+* **Endlessh**
