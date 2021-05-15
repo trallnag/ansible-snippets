@@ -1,0 +1,31 @@
+---
+
+# Not necessary on Ubuntu Server 20.04 and leads to issues for example with
+# Cockpit. Default is networkd anyway. This is why I remove it.
+
+- name: Uninstall Networkmanager
+  apt:
+    name: network-manager
+    state: absent
+  register: task_uninstall_networkmanager
+  become: true
+
+- name: Disable Networkmanager
+  systemd:
+    name: network-manager
+    state: stopped
+    enabled: false
+  register: task_disable_networkmanager
+  when: task_uninstall_networkmanager.changed
+  become: true
+
+- name: Delete unit file
+  file:
+    path: /etc/init.d/network-manager
+    state: absent
+  become: true
+
+- systemd:
+    daemon_reload: true
+  when: task_disable_networkmanager.changed
+  become: true

@@ -6,6 +6,9 @@ I use on different hosts. Many of them are not generic and may contain stuff
 like personal domain names or directory structures and workflows I prefer. But
 of course no secret data.
 
-## Ubuntu 20.04
+## Ubuntu Server 20.04
 
-* **Endlessh**
+| Name | Dependencies? | Description |
+|------|---------------|-------------|
+| [**Endlessh**](ubuntu-server-20.04/roles/endlessh) | No | Endlessh on port 22 |
+| [**Network-Manager**](ubuntu-server-20.04/roles/networkmanager) | No | Removes network-manager |
